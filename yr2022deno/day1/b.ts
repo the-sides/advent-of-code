@@ -9,6 +9,8 @@ const calories = elfs.map((elf) =>
     return Number(accu + Number(food));
   }, 0)
 );
-calories.sort((a,b) => a-b);
+calories.sort((a, b) => a - b);
 
-console.log(calories.at(-1));
+console.log(
+  (calories.at(-1) ?? 0) + (calories.at(-2) ?? 0) + (calories.at(-3) ?? 0),
+);
