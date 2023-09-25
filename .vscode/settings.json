@@ -1,5 +1,10 @@
 {
     "deno.enable": true,
     "deno.unstable": true,
-    "deno.importMap": "yr20202deno/importMap.json"
+    "deno.importMap": "yr20202deno/importMap.json",
+    "workbench.colorCustomizations": {
+        "activityBar.background": "#3C0185",
+        "titleBar.activeBackground": "#5401BA",
+        "titleBar.activeForeground": "#FBF8FF"
+    }
 }

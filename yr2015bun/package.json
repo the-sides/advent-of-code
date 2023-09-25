@@ -1,0 +1,18 @@
+{
+  "name": "yr2015bun",
+  "module": "index.ts",
+  "scripts": {
+    "start": "bun --watch run index.ts"
+  },
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ink": "4.0.0",
+    "react": "^18.2.0"
+  }
+}
