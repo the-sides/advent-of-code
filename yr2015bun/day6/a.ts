@@ -1,6 +1,7 @@
 const path = import.meta.dir + '/input.txt';
 const file = Bun.file(path);
 const input = await file.text();
+const DIM = 1000
 
 // const actions: {[key: string]: (next: ) => void} = {
 //     'toggle' : () => {},
@@ -11,28 +12,14 @@ const input = await file.text();
 //     'on': () => {},
 //     'off': () => {},
 // };
-enum ACTION {
-    on,
-    off,
-    toggle
-};
 
-const grid: Boolean[][] = [... new Array(10).fill([...new Array(10).fill(false)])];
-grid[0][0] = true;
-grid[0][9] = true;
-grid[1][8] = true;
-
-// Does not work, use this
-
-const makeGrid = () => {
+const makeGrid = (dim = DIM) => {
     let arr: Boolean[][] = [];
-    let rows = 4;
-    let columns = 3;
 
     // creating two-dimensional array
-    for (let i = 0; i < rows; i++) {
+    for (let i = 0; i < dim; i++) {
         arr[i] = [];
-        for (let j = 0; j < columns; j++) {
+        for (let j = 0; j < dim; j++) {
             arr[i][j] = false;
         }
     }
@@ -40,14 +27,54 @@ const makeGrid = () => {
     return arr
 }
 
-const change = (action: ACTION) => {
+const countGrid = (dim = DIM) => {
+    let sum = 0;
+
+    // creating two-dimensional array
+    for (let i = 0; i < dim; i++) {
+        for (let j = 0; j < dim; j++) {
+            if (grid[i][j]) sum++;
+        }
+    }
+
+    return sum
+}
+
+const grid: Boolean[][] = makeGrid()
+
+
+const change = (action: string, from: number[], to: number[]) => {
+    // Use CONST 
+
+    for (let i = from[0]; i <= to[0]; i++) {
+        for (let j = from[1]; j <= to[1]; j++) {
+            const flip = action === 'toggle' ?
+                !grid[i][j] :
+                action === 'on';
+            grid[i][j] = flip
+                
+        }
+    }
 
 }
-console.log(grid)
+
+
 
 input
     .split('\n')
     .forEach((line: string) => {
-        const words = line.split(' ');
+        const words: any[] = line.split(' ');
+
+        const from = words.at(-3).split(',').map(Number)
+        const to = words.at(-1).split(',').map(Number)
+
+        if (words[0] === 'turn') {
+            change(words[1], from, to);
+        } else
+            change(words[0], from, to);
+
+
         // if (words[0] === 'turn') 
     });
+
+console.log(countGrid())
