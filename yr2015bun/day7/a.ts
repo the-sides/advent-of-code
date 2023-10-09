@@ -7,46 +7,95 @@ const input = await file.text();
 // For wires when they first come up. 
 // The entire circuit needs to be mapped out 
 // before values are evaluted at each wire.
-const wires: { [key: string]: number } = {};
+type inputConfig = {
+    op: string;
+    a: string;
+    b?: string;
+}
+// const wires: { [key: string]: inputConfig } = {};
+
+
+// Setup wires
+const wires = input
+    .split('\n')
+    .reduce((wires: any, line: string) => {
+        const [input, output] = line.split('->').map(s => s.trim());
+        const inputs = input.split(' ');
+        if (inputs.length === 1) {
+            wires = {
+                ...wires,
+                [output]: {
+                    op: 'SET',
+                    a: inputs[0]
+                }
+            }
+            // console.log([output], wires[output])
+        }
+        else if (inputs[0] === 'NOT') {
+            wires[output] = {
+                op: 'NOT',
+                a: inputs[1]
+            }
+        } else {
+            const [a, op, b] = inputs;
+            wires[output] = {
+                op,
+                a,
+                b
+            }
+
+        }
+        return wires;
+    }, {});
+
+// Pass electricity
+// console.log(wires, wires.a)
+
 
 const derive = (x: string) => {
     if (Number.isNaN(Number(x))) {
-        return wires[x];
+        return read(x);
     } else {
         return new Uint16Array([Number(x)])[0]
     }
 }
 
-input
-    .split('\n')
-    .forEach((line: string) => {
-        const [input, output] = line.split('->').map(s => s.trim());
-        const inputs = input.split(' ')
-        if (inputs.length === 1) {
-            wires[output] = derive(inputs[0]);
-        }
-        if (inputs[0] === 'NOT') {
-            const a = derive(inputs[1]);
-            wires[output] = ~a & 0xFFFF;
-        } else {
-            const [a0, op, b0] = inputs;
-            const a = derive(a0);
-            const b = derive(b0);
+const seen: {[key: string]: number} = Object.keys(wires).reduce((accu, crnt) => ({...accu, [crnt]: 0}), {});
 
-            if (op === 'AND') {
-                console.log(a, b, a & b)
-                wires[output] = a & b;
-            }
-            if (op === 'OR') {
-                wires[output] = a | b;
-            }
-            if (op === 'LSHIFT') {
-                wires[output] = a << b;
-            }
-            if (op === 'RSHIFT') {
-                wires[output] = a >> b;
-            }
-        }
-    });
+function read(reg: string): number {
+    const { op, a: a0, b: b0 } = wires[reg];
+    seen[reg]++
+    console.log('reg', reg, seen[reg]++)
+    if (op === 'SET') {
+        return derive(a0);
+    }
+    if (op === 'NOT') {
+        return ~derive(a0) & 0xFFFF;
+    }
+    if (typeof b0 === 'undefined') {
+        console.error('This should have never happened', reg, op);
+        return 0;
+    };
 
-console.log(wires)
+    const av = derive(a0);
+    const bv = derive(b0);
+
+    if (op === 'AND') {
+        return av & bv;
+    }
+    if (op === 'OR') {
+        return av | bv;
+    }
+    if (op === 'LSHIFT') {
+        return av << bv;
+    }
+    if (op === 'RSHIFT') {
+        return av >> bv;
+    }
+    console.error('Operation not found')
+    return 0;
+}
+
+const ans = read('a')
+
+console.log(ans)
