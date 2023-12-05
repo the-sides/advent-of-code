@@ -6,35 +6,32 @@ const initSeeds = input.split('\n')[0].split(': ')[1].split(' ').map(Number);
 console.log(initSeeds)
 let sum = 0;
 
-const map: any = {
-    'toSoil': [
-
-    ]
-}
+const map: any = input.split('\n').slice(2).reduce((map: any[][], line: string) => {
+    if (line.includes(' map:')) {
+        map.push([])
+    }
+    const [dest, start, offset] = line.split(' ').map(Number)
+    map.at(-1)?.push({
+        dest, start, offset
+    })
+    return map;
+}, []);
+console.log(map)
 
 const mapSeed = (initSeed: number) => {
-    // Once a seed fits into a range, flag it so it doesn't get mapped again
-    let mapped = false;
     // Seed evolves down map into location
-    return input.split('\n').slice(2).reduce((seedPos: number, line: string) => {
+    return map.reduce((seedPos: number, mappingGroup: any) => {
+        // Once a seed fits into a range, flag it so it doesn't get mapped again
         console.log(initSeed, seedPos)
-        if (line === '') { return seedPos; };
-        if (line.includes(' map:')) {
-            // Map again as we've gotten to a new area
-            mapped = false; 
-            return seedPos;
+        for (let i = 0; i < mappingGroup.length; i++) {
+            const {dest, start, offset} = mappingGroup[i];  
+            if (seedPos >= start && seedPos < start + offset) {
+                const diff = seedPos - start;
+                seedPos = dest + diff;
+                return seedPos;
+            }
         }
-        // Don't remap if on the same collection
-        if(mapped) return seedPos;
-        const [dest, start, offset] = line.split(' ').map(Number)
-        if(seedPos >= start && seedPos < start + offset){
-            const diff = seedPos - start;
-            seedPos = dest + diff;
-            mapped = true;
-        }
-        // Return same value if 
         return seedPos;
-        // if(line === '') break;
     }, initSeed);
 }
 
