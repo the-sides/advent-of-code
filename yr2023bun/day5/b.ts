@@ -24,13 +24,14 @@ for (let i = 0; i < initSeeds.length; i += 2) {
     let from = initSeeds[i];
     let upTo = initSeeds[i + 1];
     const upToMax = initSeeds[i + 1];
-    const patchLocs: number[] = []
+    let lowest: number = 9e12
     while (upTo--) {
-        if(upTo % 200000 === 0) console.log('remaining', upTo/upToMax)
-        patchLocs.push(mapSeed(from))
+        if(upTo % 2000000 === 0) console.log('remaining', upTo/upToMax)
+        const newSeed = mapSeed(from)
+        if(newSeed < lowest) lowest = newSeed
         from++;
     }
-    locations.push(patchLocs.toSorted((a, b) => a-b)[0])
+    locations.push(lowest)
 }
 
 
