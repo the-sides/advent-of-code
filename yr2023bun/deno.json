@@ -1,3 +1,15 @@
 {
-	"importMap": "importMap.json"
+  "importMap": "importMap.json",
+  "tasks": {
+    "a1": "(cd day1 && deno run --allow-read a.ts)"
+  },
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+    "strict": true,
+    "types": [
+      "bun-types"
+    ]
+  }
 }
