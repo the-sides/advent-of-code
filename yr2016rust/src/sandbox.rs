@@ -2,8 +2,13 @@ use rand::Rng;
 use std::cmp::Ordering;
 use std::io;
 
+fn test() -> u32 {
+    12
+}
+
 pub fn play() {
-    println!("Guess the number!");
+    // let val: u32 = ;
+    println!("Guess the number! {}", test());
 
     let secret_number = rand::thread_rng().gen_range(1..=100);
 
