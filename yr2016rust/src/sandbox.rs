@@ -3,6 +3,10 @@ use std::cmp::Ordering;
 use std::io;
 
 fn test() -> u32 {
+    for number in (1..4).rev() {
+        println!("{number}!");
+    }
+    println!("LIFTOFF!!!");
     12
 }
 
