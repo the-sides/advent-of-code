@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // mod sandbox;
 mod day1;
 
