@@ -4,5 +4,5 @@ mod day1;
 
 fn main() {
     // sandbox::play();
-    day1::a::solve();
+    day1::b::solve();
 }
