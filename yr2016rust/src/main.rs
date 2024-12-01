@@ -1,5 +1,7 @@
-mod sandbox;
+// mod sandbox;
+mod day1;
 
 fn main() {
-    sandbox::play();
+    // sandbox::play();
+    day1::a::solve();
 }
