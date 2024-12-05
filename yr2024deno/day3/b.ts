@@ -6,6 +6,8 @@ let sum = 0;
 
 const isNum = (c: string) => !Number.isNaN(Number(c));
 
+const spaces: (x: number) => string = (x) => { if (x > 0) { return ' ' + spaces(x - 1) } else return ''; }
+
 const walkerChecks = [
     (c: string) => c === 'm', // 0
     (c: string) => c === 'u', // 1
@@ -15,12 +17,73 @@ const walkerChecks = [
     (c: string) => c === ')', // 5
     (_: string) => false,
     (_: string) => false,
-    (_: string) => true,
-    (_: string) => true,
 ]
 
-const _spaces: (x: number) => string = (x) => { if (x > 0) { return ' ' + _spaces(x - 1) } else return ''; }
 
+const gateDoChecks = [
+    (c: string) => c === 'd', // 0
+    (c: string) => c === 'o', // 1
+    (c: string) => c === '(', // 2
+    (c: string) => c === ')', // 3
+    (_: string) => false,
+    (_: string) => false,
+]
+
+
+const gateNoDoChecks = [
+    (c: string) => c === 'd',  // 0
+    (c: string) => c === 'o',  // 1
+    (c: string) => c === 'n',  // 1
+    (c: string) => c === `'`, // 3
+    (c: string) => c === 't',  // 4
+    (c: string) => c === '(',  // 5
+    (c: string) => c === ')',  // 6
+    (_: string) => false,
+    (_: string) => false,
+]
+
+const allowances: boolean[] = [];
+const debug = false;
+
+function walkGates() {
+    let state = 0;
+    let allowed = true;
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        allowances.push(allowed)
+        debug && console.log(line)
+        debug && console.log(`${spaces(i)}^:s-${state}${allowed ? 'o': 'x'}`)
+        if(allowed) {
+            const check = gateNoDoChecks[state](char)
+
+
+            if(check && state === 6) {
+                allowed = false
+                state = 0;
+                continue;
+            }
+            if(check){
+                state++;
+                continue;
+            }
+            state = 0;
+        } else {
+            const check = gateDoChecks[state](char)
+
+
+            if(check && state === 3) {
+                allowed = true
+                state = 0;
+                continue;
+            }
+            if(check){
+                state++;
+                continue;
+            }
+            state = 0;
+        }
+    }
+}
 
 function walkMults() {
     // let walkerPos = 0;
@@ -40,8 +103,11 @@ function walkMults() {
         const char = line[i];
         const numFound = isNum(char)
         const check = walkerChecks[walkerState](char)
-        // console.log(line)
-        // console.log(`${spaces(i)}^:s-${walkerState}`)
+        const allowed = allowances[i]
+        debug && console.log(line)
+        debug && console.log(`${spaces(i)}^:s-${walkerState}${allowed ? 'o': 'x'} = ${sum}`)
+
+        if(!allowed) continue;
 
         // Starting 'mul(
         if (check && walkerState <= 3) {
@@ -103,5 +169,5 @@ function walkMults() {
     console.log({ sum })
 }
 
-
+walkGates();
 walkMults();
