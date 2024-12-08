@@ -1,9 +1,8 @@
-import { solve } from "./a.ts";
+import { solve } from "./b.ts";
 
 function handler(req: Request): Response {
-    let { next } = solve();
+    let { next, max } = solve();
     if (new URL(req.url).pathname !== '/solve') {
-        next = solve().next;
         const html =`
             <!DOCTYPE html>
             <html lang="en">
@@ -17,30 +16,22 @@ function handler(req: Request): Response {
                     background-color: black;
                     color: white;
                     font-family: monospace;
-                    height: 200vh; /* Set height large enough to allow for scrolling */
+                    height: 200vh;
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 1rem;
+                    justify-content: start;
+                    align-content: flex-start;
                 }
                 header {
-                    position: absolute;
+                    position: fixed;
+                    font-size: 2em;
+                    padding: 1rem;
                     right: 0;
                     top: 0;
                 }
             </style>
-            <script>
-                async function fetchStream() {
-                    const response = await fetch('/solve');
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
 
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-                        document.body.children[0].innerText = decoder.decode(value, { stream: true });
-                    }
-                }
-
-                fetchStream().catch(console.error);
-
-            </script>
             <body>
                 <div>
                 </div>
@@ -48,6 +39,47 @@ function handler(req: Request): Response {
                     
                 </header>
             </body>
+            <script>
+                async function fetchStream() {
+                    const header= document.querySelector('header')
+                    const response = await fetch('/solve');
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        buffer += decoder.decode(value, { stream: true });
+
+                        let boundary;
+                        while ((boundary = buffer.indexOf('\\n')) !== -1) {
+                            const chunk = buffer.slice(0, boundary).trim();
+                            buffer = buffer.slice(boundary + 1);
+                            if (chunk) {
+                                const payload = JSON.parse(chunk);
+                                document.body.children[0].innerText = payload.lines;
+                                header.innerText = payload.guard;
+                                if(payload.looped) {
+                                    document.body.children[0].style.opacity = 0.6
+                                    const newElm = document.createElement('div')
+                                    document.body.prepend(newElm)
+                                    // if(document.body.children.length > 120) document.body.children[document.body.children.length-8].remove()
+                                }                                
+                                if(payload.finished) {
+                                    document.body.children[0].style.opacity = 0.2
+                                    const newElm = document.createElement('div')
+                                    document.body.prepend(newElm)
+                                    // if(document.body.children.length > 120) document.body.children[document.body.children.length-8].remove()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                fetchStream().catch(console.error);
+
+            </script>
             </html>
         `;
         return new Response(html, {
@@ -58,12 +90,25 @@ function handler(req: Request): Response {
     }
 
     let timer: number | undefined = undefined;
+    let y = 0;
+    let x = 0;
+    let loops = 0;
     const body = new ReadableStream({
         start(controller) {
             timer = setInterval(() => {
-                const lines = next().join('\n');
-                controller.enqueue(new TextEncoder().encode(lines));
-            }, 1);
+                const {lines, guard, finished, looped, obstruction} = next();
+                const jsonLine = `${JSON.stringify({ lines, guard, finished, looped, obstruction })}\n`;
+                controller.enqueue(new TextEncoder().encode(jsonLine));
+                if(finished || looped) {
+                    if(looped) loops++;
+                    if(x === max.x){ x = 0; y++}
+                    if(y === max.y){
+                        console.log("Loops Possible:", loops)
+                        Deno.exit()
+                    }
+                    next = solve([y, x++]).next
+                }
+            }, 5);
         },
         cancel() {
             if (timer !== undefined) {
@@ -74,7 +119,7 @@ function handler(req: Request): Response {
 
     return new Response(body, {
         headers: {
-            "content-type": "text/plain",
+            "content-type": "text/plain; charset=utf-8",
             "x-content-type-options": "nosniff",
         },
     });
