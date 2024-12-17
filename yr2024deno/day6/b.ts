@@ -103,7 +103,7 @@ export function solve(obstruction = [0,0]) {
             let i = 0;
             do {
                 move[dir]?.();
-            } while (!looped && !finished && i++ < 6000)
+            } while (!looped && !finished && i++ < 1600)
             
             return { lines: lines.map(line => line.join('')).join('\n'), guard, finished, looped, obstruction};
         }

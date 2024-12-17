@@ -1,4 +1,4 @@
-import { solve } from "./b.ts";
+import { solve } from "../day6/b.ts";
 
 function handler(req: Request): Response {
     let { next, max } = solve();
